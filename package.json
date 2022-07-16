@@ -1,0 +1,53 @@
+{
+  "name": "ts-dynamodb-schema",
+  "version": "1.0.0",
+  "description": "Type safe DynamoDB Schema.",
+  "keywords": [
+    "dynamodb",
+    "typescript",
+    "schema",
+    "validation",
+    "type",
+    "inference"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "run-p build:*",
+    "build:common": "tsc",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:doc": "rimraf docs && typedoc ./src/index.ts",
+    "format": "prettier --write src",
+    "lint": "eslint --fix './src/**/*.ts'",
+    "test": "prettier --check src && eslint './src/**/*.ts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arowM/ts-dynamodb-schema"
+  },
+  "author": "Sakura-chan the Goat",
+  "license": "MIT",
+  "devDependencies": {
+    "@tsconfig/strictest": "^1.0.1",
+    "@types/node": "^18.0.4",
+    "@typescript-eslint/eslint-plugin": "^5.30.6",
+    "eslint": "^8.19.0",
+    "eslint-config-prettier": "^8.5.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.7.1",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.9.1",
+    "typedoc": "^0.23.7",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.130.0",
+    "@aws/dynamodb-data-marshaller": "^0.7.3",
+    "@aws/dynamodb-expressions": "^0.7.3"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "ts-dynamodb-schema",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Type safe DynamoDB Schema.",
   "keywords": [
     "dynamodb",

@@ -1,7 +1,18 @@
 {
   "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
-    "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "target": "ES2018",
+    "module": "commonjs",
+    "outDir": "dist",
+    "alwaysStrict": true,
+    "declaration": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": false,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "moduleResolution": "node"
   }
 }

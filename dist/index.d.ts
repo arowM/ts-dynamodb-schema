@@ -8,13 +8,15 @@ import * as marshaller from "@aws/dynamodb-data-marshaller";
  * Schema
  */
 export declare abstract class Schema<T> {
-    readonly _target: T;
+    /** DO NOT ACCESS THIS!
+     */
+    readonly _I_AM_FOOL_ENOUGH_TO_ACCESS_THIS: T;
     abstract serializeItem(): marshaller.SchemaType;
 }
 /**
  * Infer type of Schema.
  */
-export declare type infer<S extends Schema<any>> = S["_target"];
+export declare type infer<S extends Schema<any>> = S["_I_AM_FOOL_ENOUGH_TO_ACCESS_THIS"];
 /**
  * Binary Schema
  */
@@ -51,24 +53,29 @@ export declare function set<T extends ArrayBuffer | ArrayBufferView | number | s
  * Nullable Schema
  */
 export declare function nullable<T>(item: Schema<T>): Schema<T | null>;
+/** Type for `{ ...t, ...v }`
+ */
+export declare type Merged<T extends Record<any, any>, V extends Required<Record<any, any>>> = {
+    [K in keyof T]: K extends keyof V ? any : T[K];
+} & V;
 /**
  * Object Schema
  */
-export declare class ObjectSchema<T extends {
-    [key: string]: any;
-}> extends Schema<T> {
-    readonly _schema: Array<[keyof T, Schema<T[keyof T]>]>;
+export declare class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
+    /** Returns shape of the Schema.
+     */
+    readonly shape: Record<keyof T, Schema<T[keyof T]>>;
     private constructor();
-    static entry: ObjectSchema<{}>;
+    /** Empty `ObjectSchema`.
+     *
+     * Used for the entry point to build a complex object.
+     */
+    static empty: () => ObjectSchema<{}>;
     /** Asign required field.
      *
      * Note that `Schema` cannot handle objects with any optional fields.
      */
-    field<V extends {
-        [key: string]: any;
-    }>(name: string, schema: Schema<V[keyof V]>): ObjectSchema<T & {
-        [key in keyof V]-?: V[key];
-    }>;
+    field<V extends Required<Record<string, any>>>(name: string, schema: Schema<V[keyof V]>): ObjectSchema<Merged<T, V>>;
     serializeValue(): marshaller.Schema;
     serializeItem(): marshaller.SchemaType;
     marshallItem(input: T): AttributeMap;

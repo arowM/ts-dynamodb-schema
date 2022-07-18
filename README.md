@@ -29,16 +29,16 @@ By using ts-dynamodb-schema, you can achieve a more type-safe conversion:
 
 ```typescript
 import {ObjectSchema, number, string} from "ts-dynamodb-schema";
-import type * as dst from "ts-dynamodb-schema";
+import type * as tds from "ts-dynamodb-schema";
 import type { AttributeMap } from "aws-sdk/clients/dynamodb";
 
 const schema =
-  ObjectSchema.entry
-    .field<{ foo: number }>("foo", number())
+  ObjectSchema.empty()
+    .field<{ readonly foo: number }>("foo", number())
     .field<{ bar: string }>("bar", string());
 
-type Foo = dst.infer<typeof schema>;
-// => { foo: number, bar: string }
+type Foo = tds.infer<typeof schema>;
+// => { readonly foo: number, bar: string }
 
 const serialized : AttributeMap = schema.marshallItem({ foo: 3, bar: "foo" });
 // => { foo: { N: '3' }, bar: { S: 'foo' } }

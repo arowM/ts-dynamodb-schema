@@ -11,7 +11,9 @@ import * as marshaller from "@aws/dynamodb-data-marshaller";
  * Schema
  */
 export abstract class Schema<T> {
-  readonly _target!: T;
+  /** DO NOT ACCESS THIS!
+   */
+  readonly _I_AM_FOOL_ENOUGH_TO_ACCESS_THIS!: T;
   abstract serializeItem(): marshaller.SchemaType;
 }
 
@@ -19,7 +21,8 @@ export abstract class Schema<T> {
  * Infer type of Schema.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type infer<S extends Schema<any>> = S["_target"];
+export type infer<S extends Schema<any>> =
+  S["_I_AM_FOOL_ENOUGH_TO_ACCESS_THIS"];
 
 class BinarySchema extends Schema<ArrayBuffer | ArrayBufferView> {
   constructor() {
@@ -223,37 +226,57 @@ export function nullable<T>(item: Schema<T>): Schema<T | null> {
   return new NullableSchema(item);
 }
 
+/** Type for `{ ...t, ...v }`
+ */
+export type Merged<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends Record<any, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  V extends Required<Record<any, any>>
+> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  { [K in keyof T]: K extends keyof V ? any : T[K] } & V;
+
 /**
  * Object Schema
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class ObjectSchema<T extends { [key: string]: any }> extends Schema<T> {
-  readonly _schema!: Array<[keyof T, Schema<T[keyof T]>]>;
+export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
+  /** Returns shape of the Schema.
+   */
+  public readonly shape!: Record<keyof T, Schema<T[keyof T]>>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private constructor(schema: Array<[keyof T, Schema<any>]>) {
+  private constructor(schema: Record<keyof T, Schema<any>>) {
     super();
-    this._schema = schema;
+    this.shape = schema;
   }
+  /** Empty `ObjectSchema`.
+   *
+   * Used for the entry point to build a complex object.
+   */
   // eslint-disable-next-line @typescript-eslint/ban-types
-  public static entry: ObjectSchema<{}> = new ObjectSchema([]);
+  public static empty: () => ObjectSchema<{}> = () => new ObjectSchema({});
 
   /** Asign required field.
    *
    * Note that `Schema` cannot handle objects with any optional fields.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public field<V extends { [key: string]: any }>(
+  public field<V extends Required<Record<string, any>>>(
     name: string,
     schema: Schema<V[keyof V]>
-  ): ObjectSchema<T & { [key in keyof V]-?: V[key] }> {
-    return new ObjectSchema<T & { [key in keyof V]-?: V[key] }>([
-      ...this._schema,
-      [name, schema],
-    ]);
+  ): ObjectSchema<Merged<T, V>> {
+    return new ObjectSchema<Merged<T, V>>({
+      ...this.shape,
+      [name]: schema,
+    } as Merged<T, V>);
   }
   public serializeValue(): marshaller.Schema {
     return Object.fromEntries(
-      this._schema.map(([key, schema]) => [key, schema.serializeItem()])
+      Object.entries(this.shape).map(([key, schema]) => [
+        key,
+        schema.serializeItem(),
+      ])
     );
   }
   public serializeItem(): marshaller.SchemaType {
@@ -266,12 +289,13 @@ export class ObjectSchema<T extends { [key: string]: any }> extends Schema<T> {
     return marshaller.marshallItem(this.serializeValue(), input);
   }
   public unmarshallItem(input: AttributeMap): T {
-    const ret: T = marshaller.unmarshallItem<T>(this.serializeValue(), input);
+    const schema = this.serializeValue();
+    const ret: T = marshaller.unmarshallItem<T>(schema, input);
     // It seems that marshaller.unmarshallItem has a bug...
-    this._schema.forEach(([key]) => {
-      if (!(key in ret)) {
+    Object.keys(this.shape).forEach((key) => {
+      if (ret[key] === void 0) {
         throw new Error(
-          'Required Attribute "' + key.toString() + '" is not found.'
+          `Value for property ${key} is unexpected.\nExpected: ${JSON.stringify(schema[key])}\nActual: ${JSON.stringify(input[key])}`
         );
       }
     });

@@ -9,16 +9,17 @@ import * as marshaller from "@aws/dynamodb-data-marshaller";
 
 /**
  * Schema
+ * @group Core
  */
 export abstract class Schema<T> {
-  /** DO NOT ACCESS THIS!
-   */
+  /** @hidden */
   readonly _I_AM_FOOL_ENOUGH_TO_ACCESS_THIS!: T;
   abstract serializeItem(): marshaller.SchemaType;
 }
 
 /**
  * Infer type of Schema.
+ * @group Core
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type infer<S extends Schema<any>> =
@@ -35,6 +36,7 @@ class BinarySchema extends Schema<ArrayBuffer | ArrayBufferView> {
 
 /**
  * Binary Schema
+ * @group Primitive Schema
  */
 export const buffer: () => Schema<ArrayBufferView | ArrayBuffer> = () =>
   new BinarySchema();
@@ -50,6 +52,7 @@ class BooleanSchema extends Schema<boolean> {
 
 /**
  * Boolean Schema
+ * @group Primitive Schema
  */
 export const boolean: () => Schema<boolean> = () => new BooleanSchema();
 
@@ -64,6 +67,7 @@ class DateSchema extends Schema<Date> {
 
 /**
  * Date Schema
+ * @group Primitive Schema
  */
 export const date: () => Schema<Date> = () => new DateSchema();
 
@@ -78,6 +82,7 @@ class NumberSchema extends Schema<number> {
 
 /**
  * Number Schema.
+ * @group Primitive Schema
  */
 export const number: () => Schema<number> = () => new NumberSchema();
 
@@ -92,6 +97,7 @@ class StringSchema extends Schema<string> {
 
 /**
  * String Schema.
+ * @group Primitive Schema
  */
 export const string: () => Schema<string> = () => new StringSchema();
 
@@ -111,6 +117,7 @@ class ArraySchema<T> extends Schema<T[]> {
 
 /**
  * Array Schema
+ * @group Combinator
  */
 export function array<T>(item: Schema<T>): Schema<T[]> {
   return new ArraySchema(item);
@@ -132,6 +139,7 @@ class MapSchema<T> extends Schema<Map<string, T>> {
 
 /**
  * Map Schema
+ * @group Combinator
  */
 export function map<T>(item: Schema<T>): Schema<Map<string, T>> {
   return new MapSchema(item);
@@ -168,6 +176,7 @@ class SetSchema<
 
 /**
  * Set Schema
+ * @group Combinator
  */
 export function set<T extends ArrayBuffer | ArrayBufferView | number | string>(
   item: Schema<T>
@@ -221,12 +230,14 @@ class NullableSchema<T> extends Schema<T | null> {
 
 /**
  * Nullable Schema
+ * @group Combinator
  */
 export function nullable<T>(item: Schema<T>): Schema<T | null> {
   return new NullableSchema(item);
 }
 
 /** Type for `{ ...t, ...v }`
+ * @group Helper
  */
 export type Merged<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -239,37 +250,44 @@ export type Merged<
 
 /**
  * Object Schema
+ * @group Core
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
   /** Returns shape of the Schema.
    */
-  public readonly shape!: Record<keyof T, Schema<T[keyof T]>>;
+  public readonly shape!: { [K in keyof T]: Schema<T[K]> };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private constructor(schema: Record<keyof T, Schema<any>>) {
+  private constructor(schema: { [K in keyof T]: Schema<T[K]> }) {
     super();
     this.shape = schema;
   }
-  /** Empty `ObjectSchema`.
-   *
-   * Used for the entry point to build a complex object.
-   */
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  public static empty: () => ObjectSchema<{}> = () => new ObjectSchema({});
+
+  public static fromRecord<T>(schema: { [K in keyof T]: Schema<T[K]> }) : ObjectSchema<{ [K in keyof T]: T[K] }> {
+    return new ObjectSchema(schema);
+  }
 
   /** Asign required field.
    *
    * Note that `Schema` cannot handle objects with any optional fields.
+   *
+   * @example
+   * ```ts
+   * ObjectSchema.object()
+   *   .extendField<{ foo: string }>("foo", string())
+   *   .extendField<{ readonly bar: number }>("bar", number())
+   * // => Returns Schema for `{ foo: string; readonly bar: number }`
+   * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public field<V extends Required<Record<string, any>>>(
-    name: string,
-    schema: Schema<V[keyof V]>
-  ): ObjectSchema<Merged<T, V>> {
-    return new ObjectSchema<Merged<T, V>>({
+  public extendField<K extends string, V>(
+    name: K,
+    schema: Schema<V>
+  ): ObjectSchema<Merged<T, { [ key in K ]: V }>> {
+    return new ObjectSchema<Merged<T, { [ key in K ]: V }>>({
       ...this.shape,
       [name]: schema,
-    } as Merged<T, V>);
+    });
   }
   public serializeValue(): marshaller.Schema {
     return Object.fromEntries(
@@ -295,10 +313,20 @@ export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
     Object.keys(this.shape).forEach((key) => {
       if (ret[key] === void 0) {
         throw new Error(
-          `Value for property ${key} is unexpected.\nExpected: ${JSON.stringify(schema[key])}\nActual: ${JSON.stringify(input[key])}`
+          `Value for property ${key} is unexpected.\nExpected: ${JSON.stringify(
+            schema[key]
+          )}\nActual: ${JSON.stringify(input[key])}`
         );
       }
     });
     return ret;
   }
+}
+
+/**
+ * Object Schema
+ * @group Combinator
+ */
+export function object<T extends Record<string, any>>(item: { [ K in keyof T]: Schema<T[K]> }) : ObjectSchema<T> {
+  return ObjectSchema.fromRecord<T>(item);
 }

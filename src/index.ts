@@ -3,7 +3,8 @@
  * @module
  */
 
-import type { AttributeValue, AttributeMap } from "aws-sdk/clients/dynamodb";
+import type { AttributeValue } from "aws-sdk/clients/dynamodb";
+import type * as clients from "aws-sdk/clients/dynamodb";
 import * as marshaller from "@aws/dynamodb-data-marshaller";
 // import {unmarshallItem, marshallValue} from "@aws/dynamodb-data-marshaller";
 
@@ -236,6 +237,10 @@ export function nullable<T>(item: Schema<T>): Schema<T | null> {
   return new NullableSchema(item);
 }
 
+/** @group Helper
+ */
+export type AttributeMap = clients.AttributeMap;
+
 /** Type for `{ ...t, ...v }`
  * @group Helper
  */
@@ -263,7 +268,9 @@ export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
     this.shape = schema;
   }
 
-  public static fromRecord<T>(schema: { [K in keyof T]: Schema<T[K]> }) : ObjectSchema<{ [K in keyof T]: T[K] }> {
+  public static fromRecord<T>(schema: {
+    [K in keyof T]: Schema<T[K]>;
+  }): ObjectSchema<{ [K in keyof T]: T[K] }> {
     return new ObjectSchema(schema);
   }
 
@@ -283,8 +290,8 @@ export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
   public extendField<K extends string, V>(
     name: K,
     schema: Schema<V>
-  ): ObjectSchema<Merged<T, { [ key in K ]: V }>> {
-    return new ObjectSchema<Merged<T, { [ key in K ]: V }>>({
+  ): ObjectSchema<Merged<T, { [key in K]: V }>> {
+    return new ObjectSchema<Merged<T, { [key in K]: V }>>({
       ...this.shape,
       [name]: schema,
     });
@@ -327,6 +334,9 @@ export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
  * Object Schema
  * @group Combinator
  */
-export function object<T extends Record<string, any>>(item: { [ K in keyof T]: Schema<T[K]> }) : ObjectSchema<T> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function object<T extends Record<string, any>>(item: {
+  [K in keyof T]: Schema<T[K]>;
+}): ObjectSchema<T> {
   return ObjectSchema.fromRecord<T>(item);
 }

@@ -2,7 +2,7 @@
  * Type safe schema for DynamoDB.
  * @module
  */
-import type { AttributeMap } from "aws-sdk/clients/dynamodb";
+import type * as clients from "aws-sdk/clients/dynamodb";
 import * as marshaller from "@aws/dynamodb-data-marshaller";
 /**
  * Schema
@@ -63,6 +63,9 @@ export declare function set<T extends ArrayBuffer | ArrayBufferView | number | s
  * @group Combinator
  */
 export declare function nullable<T>(item: Schema<T>): Schema<T | null>;
+/** @group Helper
+ */
+export declare type AttributeMap = clients.AttributeMap;
 /** Type for `{ ...t, ...v }`
  * @group Helper
  */

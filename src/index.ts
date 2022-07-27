@@ -87,6 +87,32 @@ class NumberSchema extends Schema<number> {
  */
 export const number: () => Schema<number> = () => new NumberSchema();
 
+class BigIntSchema extends Schema<BigInt> {
+  constructor() {
+    super();
+  }
+  public serializeItem(): marshaller.SchemaType {
+    return {
+      type: "Custom",
+      marshall(input: BigInt) {
+        return { "N": input.toString() };
+      },
+      unmarshall(input: AttributeValue) {
+        if ("N" in input) {
+          return BigInt(input.N);
+        }
+        throw new Error("Not a Number");
+      },
+    };
+  }
+}
+
+/**
+ * BigInt Schema.
+ * @group Primitive Schema
+ */
+export const bigInt: () => Schema<BigInt> = () => new BigIntSchema();
+
 class StringSchema extends Schema<string> {
   constructor() {
     super();
@@ -147,7 +173,7 @@ export function map<T>(item: Schema<T>): Schema<Map<string, T>> {
 }
 
 class SetSchema<
-  T extends ArrayBuffer | ArrayBufferView | number | string
+  T extends ArrayBuffer | ArrayBufferView | number | BigInt | string
 > extends Schema<Set<T>> {
   readonly _schema!: Schema<T>;
   constructor(schema: Schema<T>) {
@@ -160,6 +186,9 @@ class SetSchema<
       return "Binary";
     }
     if (this._schema instanceof NumberSchema) {
+      return "Number";
+    }
+    if (this._schema instanceof BigIntSchema) {
       return "Number";
     }
     if (this._schema instanceof StringSchema) {
@@ -179,7 +208,7 @@ class SetSchema<
  * Set Schema
  * @group Combinator
  */
-export function set<T extends ArrayBuffer | ArrayBufferView | number | string>(
+export function set<T extends ArrayBuffer | ArrayBufferView | number | BigInt | string>(
   item: Schema<T>
 ): Schema<Set<T>> {
   return new SetSchema(item);

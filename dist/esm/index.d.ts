@@ -39,6 +39,11 @@ export declare const date: () => Schema<Date>;
  */
 export declare const number: () => Schema<number>;
 /**
+ * BigInt Schema.
+ * @group Primitive Schema
+ */
+export declare const bigInt: () => Schema<BigInt>;
+/**
  * String Schema.
  * @group Primitive Schema
  */
@@ -57,7 +62,7 @@ export declare function map<T>(item: Schema<T>): Schema<Map<string, T>>;
  * Set Schema
  * @group Combinator
  */
-export declare function set<T extends ArrayBuffer | ArrayBufferView | number | string>(item: Schema<T>): Schema<Set<T>>;
+export declare function set<T extends ArrayBuffer | ArrayBufferView | number | BigInt | string>(item: Schema<T>): Schema<Set<T>>;
 /**
  * Nullable Schema
  * @group Combinator

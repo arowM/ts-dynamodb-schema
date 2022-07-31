@@ -87,15 +87,15 @@ class NumberSchema extends Schema<number> {
  */
 export const number: () => Schema<number> = () => new NumberSchema();
 
-class BigIntSchema extends Schema<BigInt> {
+class BigIntSchema extends Schema<bigint> {
   constructor() {
     super();
   }
   public serializeItem(): marshaller.SchemaType {
     return {
       type: "Custom",
-      marshall(input: BigInt) {
-        return { "N": input.toString() };
+      marshall(input: bigint) {
+        return { N: input.toString() };
       },
       unmarshall(input: AttributeValue) {
         if ("N" in input && input.N !== void 0) {
@@ -111,7 +111,7 @@ class BigIntSchema extends Schema<BigInt> {
  * BigInt Schema.
  * @group Primitive Schema
  */
-export const bigInt: () => Schema<BigInt> = () => new BigIntSchema();
+export const bigInt: () => Schema<bigint> = () => new BigIntSchema();
 
 class StringSchema extends Schema<string> {
   constructor() {
@@ -173,7 +173,7 @@ export function map<T>(item: Schema<T>): Schema<Map<string, T>> {
 }
 
 class SetSchema<
-  T extends ArrayBuffer | ArrayBufferView | number | BigInt | string
+  T extends ArrayBuffer | ArrayBufferView | number | bigint | string
 > extends Schema<Set<T>> {
   readonly _schema!: Schema<T>;
   constructor(schema: Schema<T>) {
@@ -208,9 +208,9 @@ class SetSchema<
  * Set Schema
  * @group Combinator
  */
-export function set<T extends ArrayBuffer | ArrayBufferView | number | BigInt | string>(
-  item: Schema<T>
-): Schema<Set<T>> {
+export function set<
+  T extends ArrayBuffer | ArrayBufferView | number | bigint | string
+>(item: Schema<T>): Schema<Set<T>> {
   return new SetSchema(item);
 }
 
@@ -337,7 +337,7 @@ export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
    * ```
    */
   public omitField<K extends keyof T>(key: K): ObjectSchema<Omit<T, K>> {
-    const { [key]: value, ...omitted } = this.shape;
+    const { [key]: _value, ...omitted } = this.shape;
     return new ObjectSchema<Omit<T, K>>(omitted);
   }
   public serializeValue(): marshaller.Schema {

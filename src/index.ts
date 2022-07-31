@@ -98,7 +98,7 @@ class BigIntSchema extends Schema<BigInt> {
         return { "N": input.toString() };
       },
       unmarshall(input: AttributeValue) {
-        if ("N" in input) {
+        if ("N" in input && input.N !== void 0) {
           return BigInt(input.N);
         }
         throw new Error("Not a Number");
@@ -315,7 +315,6 @@ export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
    * // => Returns Schema for `{ foo: string; readonly bar: number }`
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public extendField<K extends string, V>(
     name: K,
     schema: Schema<V>
@@ -324,6 +323,22 @@ export class ObjectSchema<T extends Record<string, any>> extends Schema<T> {
       ...this.shape,
       [name]: schema,
     });
+  }
+  /** Omit required fields.
+   *
+   * @example
+   * ```ts
+   * object({
+   *  "foo": string(),
+   *  "bar": number(),
+   * })
+   *   .omitField("foo")
+   * // => Returns Schema for `{ bar: number }`
+   * ```
+   */
+  public omitField<K extends keyof T>(key: K): ObjectSchema<Omit<T, K>> {
+    const { [key]: value, ...omitted } = this.shape;
+    return new ObjectSchema<Omit<T, K>>(omitted);
   }
   public serializeValue(): marshaller.Schema {
     return Object.fromEntries(

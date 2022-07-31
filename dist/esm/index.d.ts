@@ -42,7 +42,7 @@ export declare const number: () => Schema<number>;
  * BigInt Schema.
  * @group Primitive Schema
  */
-export declare const bigInt: () => Schema<BigInt>;
+export declare const bigInt: () => Schema<bigint>;
 /**
  * String Schema.
  * @group Primitive Schema
@@ -62,7 +62,7 @@ export declare function map<T>(item: Schema<T>): Schema<Map<string, T>>;
  * Set Schema
  * @group Combinator
  */
-export declare function set<T extends ArrayBuffer | ArrayBufferView | number | BigInt | string>(item: Schema<T>): Schema<Set<T>>;
+export declare function set<T extends ArrayBuffer | ArrayBufferView | number | bigint | string>(item: Schema<T>): Schema<Set<T>>;
 /**
  * Nullable Schema
  * @group Combinator
@@ -108,6 +108,19 @@ export declare class ObjectSchema<T extends Record<string, any>> extends Schema<
     extendField<K extends string, V>(name: K, schema: Schema<V>): ObjectSchema<Merged<T, {
         [key in K]: V;
     }>>;
+    /** Omit required fields.
+     *
+     * @example
+     * ```ts
+     * object({
+     *  "foo": string(),
+     *  "bar": number(),
+     * })
+     *   .omitField("foo")
+     * // => Returns Schema for `{ bar: number }`
+     * ```
+     */
+    omitField<K extends keyof T>(key: K): ObjectSchema<Omit<T, K>>;
     serializeValue(): marshaller.Schema;
     serializeItem(): marshaller.SchemaType;
     marshallItem(input: T): AttributeMap;

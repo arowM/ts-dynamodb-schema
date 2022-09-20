@@ -29,6 +29,11 @@ export declare const buffer: () => Schema<ArrayBufferView | ArrayBuffer>;
  */
 export declare const boolean: () => Schema<boolean>;
 /**
+ * Boolean Literal Schema
+ * @group Primitive Schema
+ */
+export declare function booleanLiteral<T extends boolean>(): Schema<T>;
+/**
  * Date Schema
  * @group Primitive Schema
  */
@@ -39,6 +44,11 @@ export declare const date: () => Schema<Date>;
  */
 export declare const number: () => Schema<number>;
 /**
+ * Number Literal Schema.
+ * @group Primitive Schema
+ */
+export declare function numberLiteral<T extends number>(): Schema<T>;
+/**
  * BigInt Schema.
  * @group Primitive Schema
  */
@@ -48,6 +58,11 @@ export declare const bigInt: () => Schema<bigint>;
  * @group Primitive Schema
  */
 export declare const string: () => Schema<string>;
+/**
+ * String literal Schema.
+ * @group Primitive Schema
+ */
+export declare function stringLiteral<T extends string>(): Schema<T>;
 /**
  * Array Schema
  * @group Combinator

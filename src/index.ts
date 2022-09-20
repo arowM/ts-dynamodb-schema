@@ -57,6 +57,23 @@ class BooleanSchema extends Schema<boolean> {
  */
 export const boolean: () => Schema<boolean> = () => new BooleanSchema();
 
+class BooleanLiteralSchema<T extends boolean> extends Schema<T> {
+  constructor() {
+    super();
+  }
+  public serializeItem(): marshaller.SchemaType {
+    return { type: "Boolean" };
+  }
+}
+
+/**
+ * Boolean Literal Schema
+ * @group Primitive Schema
+ */
+export function booleanLiteral<T extends boolean>(): Schema<T> {
+  return new BooleanLiteralSchema<T>();
+}
+
 class DateSchema extends Schema<Date> {
   constructor() {
     super();
@@ -86,6 +103,23 @@ class NumberSchema extends Schema<number> {
  * @group Primitive Schema
  */
 export const number: () => Schema<number> = () => new NumberSchema();
+
+class NumberLiteralSchema<T extends number> extends Schema<T> {
+  constructor() {
+    super();
+  }
+  public serializeItem(): marshaller.SchemaType {
+    return { type: "Number" };
+  }
+}
+
+/**
+ * Number Literal Schema.
+ * @group Primitive Schema
+ */
+export function numberLiteral<T extends number>(): Schema<T> {
+  return new NumberLiteralSchema<T>();
+}
 
 class BigIntSchema extends Schema<bigint> {
   constructor() {
@@ -127,6 +161,23 @@ class StringSchema extends Schema<string> {
  * @group Primitive Schema
  */
 export const string: () => Schema<string> = () => new StringSchema();
+
+class StringLiteralSchema<T extends string> extends Schema<T> {
+  constructor() {
+    super();
+  }
+  public serializeItem(): marshaller.SchemaType {
+    return { type: "String" };
+  }
+}
+
+/**
+ * String literal Schema.
+ * @group Primitive Schema
+ */
+export function stringLiteral<T extends string>(): Schema<T> {
+  return new StringLiteralSchema<T>();
+}
 
 class ArraySchema<T> extends Schema<T[]> {
   readonly _schema!: Schema<T>;
